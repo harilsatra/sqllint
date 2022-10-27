@@ -41,7 +41,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			}
 
 			if count_statement > 1 && fun.Sel.Name != "Close" {
-				pass.Reportf(selectQueryPos, "defer close the rows returned here, immediately to avoid a memory leak ")
+				pass.Reportf(selectQueryPos, "immediately defer close the rows returned here to avoid a memory leak")
 			}
 
 			return true

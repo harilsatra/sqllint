@@ -51,5 +51,5 @@ sqllint file.go
 will produce
 
 ```
-file.go:14:15: defer close the rows returned here, immediately to avoid a memory leak
+file.go:14:15: immediately defer close the rows returned here to avoid a memory leak
 ```
