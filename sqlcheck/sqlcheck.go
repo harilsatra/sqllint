@@ -1,10 +1,7 @@
 package sqlcheck
 
 import (
-	"bytes"
-	"fmt"
 	"go/ast"
-	"go/printer"
 	"go/token"
 
 	"golang.org/x/tools/go/analysis"
@@ -17,12 +14,10 @@ var Analyzer = &analysis.Analyzer{
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
-	fmt.Println(len(pass.Files))
 	for _, file := range pass.Files {
 
 		selectQueryExists := false
 		var selectQueryPos token.Pos
-		var selectQueryExpr *ast.CallExpr
 		count_statement := 0
 		ast.Inspect(file, func(n ast.Node) bool {
 
@@ -39,8 +34,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			if fun.Sel.Name == "Query" || fun.Sel.Name == "QueryContext" {
 				selectQueryExists = true
 				selectQueryPos = fun.Pos()
-				selectQueryExpr = ce
-
 			}
 
 			if selectQueryExists {
@@ -48,21 +41,11 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			}
 
 			if count_statement > 1 && fun.Sel.Name != "Close" {
-				pass.Reportf(selectQueryPos, "defer close the rows returned here, immediately to avoid a memory leak ",
-					render(pass.Fset, selectQueryExpr))
+				pass.Reportf(selectQueryPos, "defer close the rows returned here, immediately to avoid a memory leak ")
 			}
 
 			return true
 		})
 	}
 	return nil, nil
-}
-
-// render returns the pretty-print of the given node
-func render(fset *token.FileSet, x interface{}) string {
-	var buf bytes.Buffer
-	if err := printer.Fprint(&buf, fset, x); err != nil {
-		panic(err)
-	}
-	return buf.String()
 }
